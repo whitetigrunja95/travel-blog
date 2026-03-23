@@ -36,6 +36,16 @@
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
+.register-form__input--error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
+}
+
+.register-form__error {
+  font-size: 14px;
+  color: #dc2626;
+}
+
 .register-form__submit {
   min-height: 54px;
   padding: 14px 20px;
@@ -48,4 +58,14 @@
 
 .register-form__submit:hover {
   background-color: #1d4ed8;
+}
+
+.register-form__server-error {
+  font-size: 14px;
+  color: #dc2626;
+}
+
+.register-form__submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
