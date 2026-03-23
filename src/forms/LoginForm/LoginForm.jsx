@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { AppRoute } from "../../constants/routes";
 import "./LoginForm.css";
 
 export const LoginForm = () => {
@@ -27,15 +28,17 @@ export const LoginForm = () => {
       navigate("/");
     } catch (error) {
       console.error("Ошибка входа:", error);
-      setServerError("Не удалось войти. Проверьте email и пароль.");
+      setServerError("Неправильный логин или пароль");
     }
   };
 
   return (
     <form className="login-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      {serverError && <p className="login-form__server-error">{serverError}</p>}
+
       <div className="login-form__field">
         <label className="login-form__label" htmlFor="email">
-          Email
+          Логин
         </label>
         <input
           className={`login-form__input ${
@@ -43,7 +46,7 @@ export const LoginForm = () => {
           }`}
           id="email"
           type="email"
-          placeholder="Введите email"
+          placeholder="Email"
           {...register("email", {
             required: "Введите email",
             pattern: {
@@ -67,7 +70,7 @@ export const LoginForm = () => {
           }`}
           id="password"
           type="password"
-          placeholder="Введите пароль"
+          placeholder="Пароль"
           {...register("password", {
             required: "Введите пароль",
             minLength: {
@@ -81,11 +84,19 @@ export const LoginForm = () => {
         )}
       </div>
 
-      {serverError && <p className="login-form__server-error">{serverError}</p>}
+      <div className="login-form__actions">
+        <button
+          className="login-form__register-button"
+          type="button"
+          onClick={() => navigate(AppRoute.REGISTER)}
+        >
+          Зарегистрироваться
+        </button>
 
-      <button className="login-form__submit" type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Входим..." : "Войти"}
-      </button>
+        <button className="login-form__submit" type="submit" disabled={isSubmitting}>
+          Войти
+        </button>
+      </div>
     </form>
   );
 };

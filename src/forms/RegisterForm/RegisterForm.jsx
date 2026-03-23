@@ -34,7 +34,7 @@ export const RegisterForm = () => {
       navigate("/");
     } catch (error) {
       console.error("Ошибка регистрации:", error);
-      setServerError("Не удалось зарегистрироваться. Проверьте введённые данные.");
+      setServerError("Аккаунт с данным email уже существует");
     }
   };
 
@@ -44,17 +44,17 @@ export const RegisterForm = () => {
       onSubmit={handleSubmit(onSubmit)}
       noValidate
     >
-      <div className="register-form__field">
+      <div className="register-form__field register-form__field--full">
         <label className="register-form__label" htmlFor="register-email">
           Email
         </label>
         <input
           className={`register-form__input ${
-            errors.email ? "register-form__input--error" : ""
+            errors.email || serverError ? "register-form__input--error" : ""
           }`}
           id="register-email"
           type="email"
-          placeholder="Введите email"
+          placeholder="Email"
           {...register("email", {
             required: "Введите email",
             pattern: {
@@ -66,70 +66,75 @@ export const RegisterForm = () => {
         {errors.email && (
           <span className="register-form__error">{errors.email.message}</span>
         )}
-      </div>
-
-      <div className="register-form__field">
-        <label className="register-form__label" htmlFor="register-password">
-          Пароль
-        </label>
-        <input
-          className={`register-form__input ${
-            errors.password ? "register-form__input--error" : ""
-          }`}
-          id="register-password"
-          type="password"
-          placeholder="Введите пароль"
-          {...register("password", {
-            required: "Введите пароль",
-            minLength: {
-              value: 5,
-              message: "Пароль должен содержать минимум 5 символов",
-            },
-          })}
-        />
-        {errors.password && (
-          <span className="register-form__error">{errors.password.message}</span>
+        {!errors.email && serverError && (
+          <p className="register-form__server-error">{serverError}</p>
         )}
       </div>
 
-      <div className="register-form__field">
-        <label
-          className="register-form__label"
-          htmlFor="register-confirm-password"
+      <div className="register-form__row">
+        <div className="register-form__field">
+          <label className="register-form__label" htmlFor="register-password">
+            Пароль
+          </label>
+          <input
+            className={`register-form__input ${
+              errors.password ? "register-form__input--error" : ""
+            }`}
+            id="register-password"
+            type="password"
+            placeholder="Пароль"
+            {...register("password", {
+              required: "Введите пароль",
+              minLength: {
+                value: 5,
+                message: "Пароль должен содержать минимум 5 символов",
+              },
+            })}
+          />
+          {errors.password && (
+            <span className="register-form__error">
+              {errors.password.message}
+            </span>
+          )}
+        </div>
+
+        <div className="register-form__field">
+          <label
+            className="register-form__label"
+            htmlFor="register-confirm-password"
+          >
+            Повторите пароль
+          </label>
+          <input
+            className={`register-form__input ${
+              errors.confirmPassword ? "register-form__input--error" : ""
+            }`}
+            id="register-confirm-password"
+            type="password"
+            placeholder="Повторите пароль"
+            {...register("confirmPassword", {
+              required: "Подтвердите пароль",
+              validate: (value) =>
+                value === passwordValue || "Пароли не совпадают",
+            })}
+          />
+          {errors.confirmPassword && (
+            <span className="register-form__error">
+              {errors.confirmPassword.message}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="register-form__actions">
+        <button
+          className="register-form__submit"
+          type="submit"
+          disabled={isSubmitting}
         >
-          Подтверждение пароля
-        </label>
-        <input
-          className={`register-form__input ${
-            errors.confirmPassword ? "register-form__input--error" : ""
-          }`}
-          id="register-confirm-password"
-          type="password"
-          placeholder="Повторите пароль"
-          {...register("confirmPassword", {
-            required: "Подтвердите пароль",
-            validate: (value) =>
-              value === passwordValue || "Пароли не совпадают",
-          })}
-        />
-        {errors.confirmPassword && (
-          <span className="register-form__error">
-            {errors.confirmPassword.message}
-          </span>
-        )}
+          {isSubmitting ? "Регистрируем..." : "Зарегистрироваться"}
+        </button>
       </div>
-
-      {serverError && (
-        <p className="register-form__server-error">{serverError}</p>
-      )}
-
-      <button
-        className="register-form__submit"
-        type="submit"
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? "Регистрируем..." : "Зарегистрироваться"}
-      </button>
     </form>
   );
 };

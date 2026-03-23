@@ -1,8 +1,17 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AppRoute } from "../../constants/routes";
+import { useAuth } from "../../context/AuthContext";
 import "./Header.css";
 
 export const Header = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate(AppRoute.HOME);
+  };
+
   return (
     <header className="header">
       <div className="container header__container">
@@ -10,52 +19,33 @@ export const Header = () => {
           TravelBlog
         </Link>
 
-        <nav className="header__nav">
-          <NavLink
-            className={({ isActive }) =>
-              `header__link ${isActive ? "header__link--active" : ""}`
-            }
-            to={AppRoute.HOME}
-          >
-            Главная
-          </NavLink>
+        <div className="header__actions">
+          {!isAuthenticated ? (
+            <>
+              <Link className="header__button header__button--outline" to={AppRoute.REGISTER}>
+                Регистрация
+              </Link>
 
-          <NavLink
-            className={({ isActive }) =>
-              `header__link ${isActive ? "header__link--active" : ""}`
-            }
-            to={AppRoute.LOGIN}
-          >
-            Вход
-          </NavLink>
+              <Link className="header__button header__button--filled" to={AppRoute.LOGIN}>
+                Войти
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link className="header__button header__button--outline" to={AppRoute.PROFILE}>
+                Профиль
+              </Link>
 
-          <NavLink
-            className={({ isActive }) =>
-              `header__link ${isActive ? "header__link--active" : ""}`
-            }
-            to={AppRoute.REGISTER}
-          >
-            Регистрация
-          </NavLink>
-
-          <NavLink
-            className={({ isActive }) =>
-              `header__link ${isActive ? "header__link--active" : ""}`
-            }
-            to={AppRoute.CREATE_POST}
-          >
-            Создать пост
-          </NavLink>
-
-          <NavLink
-            className={({ isActive }) =>
-              `header__link ${isActive ? "header__link--active" : ""}`
-            }
-            to={AppRoute.PROFILE}
-          >
-            Профиль
-          </NavLink>
-        </nav>
+              <button
+                className="header__button header__button--filled"
+                type="button"
+                onClick={handleLogout}
+              >
+                Выйти
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
