@@ -1,15 +1,62 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
+import { AppRoute } from "../../constants/routes";
+import "./Header.css";
 
 export const Header = () => {
   return (
-    <header>
-      <nav>
-        <Link to="/">Главная</Link>
-        <Link to="/login">Вход</Link>
-        <Link to="/register">Регистрация</Link>
-        <Link to="/posts/create">Создать пост</Link>
-        <Link to="/profile">Профиль</Link>
-      </nav>
+    <header className="header">
+      <div className="container header__container">
+        <Link className="header__logo" to={AppRoute.HOME}>
+          TravelBlog
+        </Link>
+
+        <nav className="header__nav">
+          <NavLink
+            className={({ isActive }) =>
+              `header__link ${isActive ? "header__link--active" : ""}`
+            }
+            to={AppRoute.HOME}
+          >
+            Главная
+          </NavLink>
+
+          <NavLink
+            className={({ isActive }) =>
+              `header__link ${isActive ? "header__link--active" : ""}`
+            }
+            to={AppRoute.LOGIN}
+          >
+            Вход
+          </NavLink>
+
+          <NavLink
+            className={({ isActive }) =>
+              `header__link ${isActive ? "header__link--active" : ""}`
+            }
+            to={AppRoute.REGISTER}
+          >
+            Регистрация
+          </NavLink>
+
+          <NavLink
+            className={({ isActive }) =>
+              `header__link ${isActive ? "header__link--active" : ""}`
+            }
+            to={AppRoute.CREATE_POST}
+          >
+            Создать пост
+          </NavLink>
+
+          <NavLink
+            className={({ isActive }) =>
+              `header__link ${isActive ? "header__link--active" : ""}`
+            }
+            to={AppRoute.PROFILE}
+          >
+            Профиль
+          </NavLink>
+        </nav>
+      </div>
     </header>
   );
 };

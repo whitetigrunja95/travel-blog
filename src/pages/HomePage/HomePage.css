@@ -1,0 +1,15 @@
+.home-page {
+  padding: 40px 0;
+}
+
+.home-page__title {
+  margin-bottom: 12px;
+  font-size: 40px;
+  line-height: 1.1;
+  color: #111827;
+}
+
+.home-page__text {
+  font-size: 18px;
+  color: #6b7280;
+}

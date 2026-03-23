@@ -1,0 +1,14 @@
+.login-page {
+  padding: 40px 0;
+}
+
+.login-page__title {
+  margin-bottom: 12px;
+  font-size: 32px;
+  color: #111827;
+}
+
+.login-page__text {
+  font-size: 18px;
+  color: #6b7280;
+}
