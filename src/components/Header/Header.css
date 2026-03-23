@@ -44,3 +44,32 @@
   background-color: #dbeafe;
   color: #1d4ed8;
 }
+
+/* 📱 МОБИЛКА */
+@media (max-width: 768px) {
+  .header__container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .header__logo {
+    font-size: 24px;
+  }
+
+  .header__nav {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .header__link {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+  }
+}
