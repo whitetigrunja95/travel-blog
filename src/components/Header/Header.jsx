@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { AppRoute } from "../../constants/routes";
 import { useAuth } from "../../context/AuthContext";
+import logo from "../../assets/icons/logo.svg";
 import "./Header.css";
 
 export const Header = () => {
@@ -14,38 +15,40 @@ export const Header = () => {
 
   return (
     <header className="header">
-      <div className="container header__container">
-        <Link className="header__logo" to={AppRoute.HOME}>
-          TravelBlog
-        </Link>
+      <div className="header__container">
+        <div className="header__top">
+          <Link className="header__logo" to={AppRoute.HOME} aria-label="На главную">
+            <img src={logo} alt="TravelBlog" className="header__logo-img" />
+          </Link>
 
-        <div className="header__actions">
-          {!isAuthenticated ? (
-            <>
-              <Link className="header__button header__button--outline" to={AppRoute.REGISTER}>
-                Регистрация
-              </Link>
-
-              <Link className="header__button header__button--filled" to={AppRoute.LOGIN}>
+          <div className="header__actions">
+            {!isAuthenticated ? (
+              <Link className="header__link-action" to={AppRoute.LOGIN}>
                 Войти
               </Link>
-            </>
-          ) : (
-            <>
-              <Link className="header__button header__button--outline" to={AppRoute.PROFILE}>
-                Профиль
-              </Link>
+            ) : (
+              <>
+                <Link className="header__link-action" to={AppRoute.CREATE_POST}>
+                  Добавить путешествие
+                </Link>
 
-              <button
-                className="header__button header__button--filled"
-                type="button"
-                onClick={handleLogout}
-              >
-                Выйти
-              </button>
-            </>
-          )}
+                <Link className="header__link-action" to={AppRoute.PROFILE}>
+                  Профиль
+                </Link>
+
+                <button
+                  className="header__link-action header__logout"
+                  type="button"
+                  onClick={handleLogout}
+                >
+                  Выйти
+                </button>
+              </>
+            )}
+          </div>
         </div>
+
+        <div className="header__line" />
       </div>
     </header>
   );

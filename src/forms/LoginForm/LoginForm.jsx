@@ -27,8 +27,13 @@ export const LoginForm = () => {
       await login(data);
       navigate("/");
     } catch (error) {
-      console.error("Ошибка входа:", error);
-      setServerError("Неправильный логин или пароль");
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Неправильный логин или пароль";
+
+      console.error("Ошибка входа:", error.response?.data || error.message);
+      setServerError(message);
     }
   };
 
@@ -41,9 +46,8 @@ export const LoginForm = () => {
           Логин
         </label>
         <input
-          className={`login-form__input ${
-            errors.email ? "login-form__input--error" : ""
-          }`}
+          className={`login-form__input ${errors.email ? "login-form__input--error" : ""
+            }`}
           id="email"
           type="email"
           placeholder="Email"
@@ -65,9 +69,8 @@ export const LoginForm = () => {
           Пароль
         </label>
         <input
-          className={`login-form__input ${
-            errors.password ? "login-form__input--error" : ""
-          }`}
+          className={`login-form__input ${errors.password ? "login-form__input--error" : ""
+            }`}
           id="password"
           type="password"
           placeholder="Пароль"

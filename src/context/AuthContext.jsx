@@ -54,9 +54,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (data) => {
-    const response = await loginUser(data);
-    setAuthToken(response.token);
-    await loadUser();
+    try {
+      const response = await loginUser(data);
+      setAuthToken(response.token);
+      await loadUser();
+    } catch (error) {
+      console.error("Ошибка входа:", error.response?.data || error.message);
+      throw error;
+    }
   };
 
   const register = async (data) => {
