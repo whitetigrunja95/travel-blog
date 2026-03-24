@@ -1,23 +1,40 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { AppRoute } from "../../constants/routes";
 import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/icons/logo.svg";
+import defaultAvatar from "../../assets/images/avatar-placeholder.png";
 import "./Header.css";
 
 export const Header = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = async () => {
+    setIsOpen(false);
     await logout();
     navigate(AppRoute.HOME);
   };
+
+  const handleProfileClick = () => {
+    setIsOpen((prev) => !prev);
+  };
+
+  const userName =
+    user?.full_name ||
+    `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() ||
+    "Пользователь";
 
   return (
     <header className="header">
       <div className="header__container">
         <div className="header__top">
-          <Link className="header__logo" to={AppRoute.HOME} aria-label="На главную">
+          <Link
+            className="header__logo"
+            to={AppRoute.HOME}
+            aria-label="На главную"
+          >
             <img src={logo} alt="TravelBlog" className="header__logo-img" />
           </Link>
 
@@ -28,21 +45,46 @@ export const Header = () => {
               </Link>
             ) : (
               <>
-                <Link className="header__link-action" to={AppRoute.CREATE_POST}>
-                  Добавить путешествие
-                </Link>
 
-                <Link className="header__link-action" to={AppRoute.PROFILE}>
-                  Профиль
-                </Link>
+                <div className="header__profile">
+                  <button
+                    className="header__profile-trigger"
+                    type="button"
+                    onClick={handleProfileClick}
+                    aria-expanded={isOpen}
+                    aria-haspopup="menu"
+                  >
+                    <img
+                      className="header__avatar"
+                      src={user?.avatar || defaultAvatar}
+                      alt="Аватар пользователя"
+                    />
 
-                <button
-                  className="header__link-action header__logout"
-                  type="button"
-                  onClick={handleLogout}
-                >
-                  Выйти
-                </button>
+                    <span className="header__name">{userName}</span>
+
+                    <span className="header__arrow">{isOpen ? "▴" : "▾"}</span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="header__dropdown" role="menu">
+                      <Link
+                        className="header__dropdown-link"
+                        to={AppRoute.PROFILE}
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Профиль
+                      </Link>
+
+                      <button
+                        className="header__dropdown-button"
+                        type="button"
+                        onClick={handleLogout}
+                      >
+                        Выйти
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>
