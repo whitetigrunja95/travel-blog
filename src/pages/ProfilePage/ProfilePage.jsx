@@ -1,46 +1,76 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { Header } from "../../components/Header/Header";
+import { useAuth } from "../../context/AuthContext";
 import defaultAvatar from "../../assets/images/avatar-placeholder.png";
 import editIcon from "../../assets/icons/edit.svg";
+import {
+  getCurrentUser,
+  updatePassword,
+  updateUser,
+} from "../../api/userApi";
 import "./ProfilePage.css";
 
 const FULL_NAME_MAX_LENGTH = 255;
 const CITY_MAX_LENGTH = 255;
 const ABOUT_MAX_LENGTH = 600;
 
-const mockUser = {
-  fullName: "Боярская Варвара Михайловна",
-  city: "Вышний Волочёк",
-  about:
-    "Я обожаю путешествовать. Мне нравится открывать для себя новые места, знакомиться с разными культурами и традициями. Я всегда готова отправиться в путь, даже если это означает покинуть зону комфорта. В дороге я встречаю новых людей, учусь новому и наслаждаюсь красотами природы. Путешествия дают мне возможность расширить свой кругозор и узнать больше о мире вокруг меня. Я уверена, что каждый новый опыт делает меня сильнее и мудрее.",
-  avatar: defaultAvatar,
-};
-
 export const ProfilePage = () => {
-  const navigate = useNavigate();
+  const { loadUser } = useAuth();
 
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  const [photoFile, setPhotoFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(defaultAvatar);
 
   const [formData, setFormData] = useState({
-    fullName: mockUser.fullName,
-    city: mockUser.city,
-    about: mockUser.about,
+    fullName: "",
+    city: "",
+    country: "",
+    about: "",
     newPassword: "",
-    repeatPassword: "",
   });
-
-  const [selectedAvatar, setSelectedAvatar] = useState(mockUser.avatar);
 
   const [errors, setErrors] = useState({
     fullName: "",
-    city: "",
-    about: "",
     newPassword: "",
-    repeatPassword: "",
   });
 
   const aboutLength = useMemo(() => formData.about.length, [formData.about]);
+
+  const applyUserToForm = (user) => {
+    setFormData((prev) => ({
+      ...prev,
+      fullName: user?.full_name || "",
+      city: user?.city || "",
+      country: user?.country || "",
+      about: user?.bio || "",
+      newPassword: "",
+    }));
+  };
+
+  const loadProfile = async () => {
+    try {
+      setIsLoading(true);
+      setLoadError("");
+
+      const user = await getCurrentUser();
+      applyUserToForm(user);
+    } catch (error) {
+      console.error(
+        "Не удалось загрузить профиль:",
+        error.response?.data || error.message
+      );
+      setLoadError("Не удалось загрузить профиль");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -63,17 +93,14 @@ export const ProfilePage = () => {
       return;
     }
 
-    const imageUrl = URL.createObjectURL(file);
-    setSelectedAvatar(imageUrl);
+    setPhotoFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
   };
 
   const validateForm = () => {
     const nextErrors = {
       fullName: "",
-      city: "",
-      about: "",
       newPassword: "",
-      repeatPassword: "",
     };
 
     if (!formData.fullName.trim()) {
@@ -84,16 +111,12 @@ export const ProfilePage = () => {
       nextErrors.newPassword = "Пароль должен содержать минимум 5 символов";
     }
 
-    if (formData.newPassword !== formData.repeatPassword) {
-      nextErrors.repeatPassword = "Пароли должны совпадать";
-    }
-
     setErrors(nextErrors);
 
     return !Object.values(nextErrors).some(Boolean);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const isValid = validateForm();
@@ -102,13 +125,80 @@ export const ProfilePage = () => {
       return;
     }
 
-    console.log("Профиль готов к отправке:", {
-      ...formData,
-      avatar: selectedAvatar,
-    });
+    try {
+      const updatedUser = await updateUser({
+        fullName: formData.fullName,
+        city: formData.city,
+        country: formData.country,
+        bio: formData.about,
+        photo: photoFile,
+      });
 
-    setIsEditMode(false);
+      applyUserToForm(updatedUser);
+
+      if (formData.newPassword.trim()) {
+        await updatePassword({
+          password: formData.newPassword.trim(),
+        });
+      }
+
+      await loadUser();
+      setIsEditMode(false);
+      setPhotoFile(null);
+    } catch (error) {
+      console.error(
+        "Не удалось сохранить профиль:",
+        error.response?.data || error.message
+      );
+      setLoadError("Не удалось сохранить профиль");
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="profile-page">
+        <section className="profile-page__hero">
+          <div className="profile-page__hero-overlay" />
+          <Header />
+          <div className="profile-page__hero-content">
+            <h1 className="profile-page__hero-title">
+              ИСТОРИИ ВАШИХ ПУТЕШЕСТВИЙ
+            </h1>
+          </div>
+        </section>
+
+        <section className="profile-page__content">
+          <div className="profile-page__container">
+            <div className="profile-page__state">Загрузка...</div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="profile-page">
+        <section className="profile-page__hero">
+          <div className="profile-page__hero-overlay" />
+          <Header />
+          <div className="profile-page__hero-content">
+            <h1 className="profile-page__hero-title">
+              ИСТОРИИ ВАШИХ ПУТЕШЕСТВИЙ
+            </h1>
+          </div>
+        </section>
+
+        <section className="profile-page__content">
+          <div className="profile-page__container">
+            <div className="profile-page__state profile-page__state--error">
+              {loadError}
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-page">
@@ -117,7 +207,9 @@ export const ProfilePage = () => {
         <Header />
 
         <div className="profile-page__hero-content">
-          <h1 className="profile-page__hero-title">ИСТОРИИ ВАШИХ ПУТЕШЕСТВИЙ</h1>
+          <h1 className="profile-page__hero-title">
+            ИСТОРИИ ВАШИХ ПУТЕШЕСТВИЙ
+          </h1>
         </div>
       </section>
 
@@ -130,7 +222,7 @@ export const ProfilePage = () => {
                   <div className="profile-page__avatar-box">
                     <img
                       className="profile-page__avatar-image"
-                      src={selectedAvatar}
+                      src={avatarPreview}
                       alt="Аватар пользователя"
                     />
                   </div>
@@ -149,7 +241,7 @@ export const ProfilePage = () => {
 
                 <div className="profile-page__info-column">
                   <div className="profile-page__info-top">
-                    <h2 className="profile-page__name">{formData.fullName}</h2>
+                    <h2 className="profile-page__name">{formData.fullName || "—"}</h2>
 
                     <button
                       className="profile-page__edit-button"
@@ -168,7 +260,9 @@ export const ProfilePage = () => {
 
                   <div className="profile-page__info-block">
                     <p className="profile-page__info-label">Город:</p>
-                    <p className="profile-page__info-value">{formData.city || "—"}</p>
+                    <p className="profile-page__info-value">
+                      {formData.city || "—"}
+                    </p>
                   </div>
 
                   <div className="profile-page__info-block">
@@ -190,7 +284,7 @@ export const ProfilePage = () => {
                     <div className="profile-page__avatar-box">
                       <img
                         className="profile-page__avatar-image"
-                        src={selectedAvatar}
+                        src={avatarPreview}
                         alt="Аватар пользователя"
                       />
                     </div>
@@ -215,8 +309,9 @@ export const ProfilePage = () => {
 
                       <input
                         id="fullName"
-                        className={`profile-page__input ${errors.fullName ? "profile-page__input--error" : ""
-                          }`}
+                        className={`profile-page__input ${
+                          errors.fullName ? "profile-page__input--error" : ""
+                        }`}
                         type="text"
                         name="fullName"
                         placeholder="ФИО"
@@ -232,13 +327,12 @@ export const ProfilePage = () => {
 
                     <div className="profile-page__field">
                       <label className="profile-page__label" htmlFor="city">
-                        <span className="profile-page__required">*</span> Город
+                        Город
                       </label>
 
                       <input
                         id="city"
-                        className={`profile-page__input ${errors.city ? "profile-page__input--error" : ""
-                          }`}
+                        className="profile-page__input"
                         type="text"
                         name="city"
                         placeholder="Город"
@@ -246,10 +340,6 @@ export const ProfilePage = () => {
                         value={formData.city}
                         onChange={handleChange}
                       />
-
-                      {errors.city && (
-                        <p className="profile-page__error">{errors.city}</p>
-                      )}
                     </div>
 
                     <div className="profile-page__field">
@@ -259,8 +349,7 @@ export const ProfilePage = () => {
 
                       <textarea
                         id="about"
-                        className={`profile-page__textarea ${errors.about ? "profile-page__textarea--error" : ""
-                          }`}
+                        className="profile-page__textarea"
                         name="about"
                         placeholder="Расскажите о себе"
                         maxLength={ABOUT_MAX_LENGTH}
@@ -269,12 +358,7 @@ export const ProfilePage = () => {
                       />
 
                       <div className="profile-page__textarea-footer">
-                        <div>
-                          {errors.about && (
-                            <p className="profile-page__error">{errors.about}</p>
-                          )}
-                        </div>
-
+                        <div />
                         <span className="profile-page__counter">
                           {aboutLength} / {ABOUT_MAX_LENGTH}
                         </span>
@@ -290,15 +374,16 @@ export const ProfilePage = () => {
                             className="profile-page__label"
                             htmlFor="newPassword"
                           >
-                            <span className="profile-page__required">*</span> Новый пароль
+                            Новый пароль
                           </label>
 
                           <input
                             id="newPassword"
-                            className={`profile-page__input ${errors.newPassword
+                            className={`profile-page__input ${
+                              errors.newPassword
                                 ? "profile-page__input--error"
                                 : ""
-                              }`}
+                            }`}
                             type="password"
                             name="newPassword"
                             placeholder="Новый пароль"
@@ -309,34 +394,6 @@ export const ProfilePage = () => {
                           {errors.newPassword && (
                             <p className="profile-page__error">
                               {errors.newPassword}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="profile-page__field">
-                          <label
-                            className="profile-page__label"
-                            htmlFor="repeatPassword"
-                          >
-                            <span className="profile-page__required">*</span> Повторите пароль
-                          </label>
-
-                          <input
-                            id="repeatPassword"
-                            className={`profile-page__input ${errors.repeatPassword
-                                ? "profile-page__input--error"
-                                : ""
-                              }`}
-                            type="password"
-                            name="repeatPassword"
-                            placeholder="Повторите пароль"
-                            value={formData.repeatPassword}
-                            onChange={handleChange}
-                          />
-
-                          {errors.repeatPassword && (
-                            <p className="profile-page__error">
-                              {errors.repeatPassword}
                             </p>
                           )}
                         </div>
@@ -351,10 +408,7 @@ export const ProfilePage = () => {
                           setIsEditMode(false);
                           setErrors({
                             fullName: "",
-                            city: "",
-                            about: "",
                             newPassword: "",
-                            repeatPassword: "",
                           });
                         }}
                       >

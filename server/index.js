@@ -1,15 +1,16 @@
 import express from "express";
 import cors from "cors";
+import multer from "multer";
 
 const app = express();
 const PORT = 8000;
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
 
 const users = [];
-let currentUser = null;
-
 const posts = [
   {
     id: 1,
@@ -54,6 +55,60 @@ const posts = [
   },
 ];
 
+const getTokenFromRequest = (req) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return null;
+  }
+
+  const [type, token] = authHeader.split(" ");
+
+  if (type !== "Bearer" || !token) {
+    return null;
+  }
+
+  return token;
+};
+
+const getUserIdFromToken = (token) => {
+  if (!token?.startsWith("mock-token-")) {
+    return null;
+  }
+
+  const id = Number(token.replace("mock-token-", ""));
+
+  if (!Number.isInteger(id)) {
+    return null;
+  }
+
+  return id;
+};
+
+const authMiddleware = (req, res, next) => {
+  const token = getTokenFromRequest(req);
+
+  if (!token) {
+    return res.status(401).json({
+      error: "Unauthorized",
+    });
+  }
+
+  const userId = getUserIdFromToken(token);
+  const user = users.find((item) => item.id === userId);
+
+  if (!user) {
+    return res.status(401).json({
+      error: "Unauthorized",
+    });
+  }
+
+  req.user = user;
+  req.token = token;
+
+  next();
+};
+
 app.post("/api/register", (req, res) => {
   const { email, password } = req.body;
 
@@ -79,10 +134,10 @@ app.post("/api/register", (req, res) => {
     city: "",
     country: "",
     bio: "",
+    photo: "",
   };
 
   users.push(newUser);
-  currentUser = newUser;
 
   return res.json({
     token: `mock-token-${newUser.id}`,
@@ -102,35 +157,81 @@ app.post("/api/login", (req, res) => {
     });
   }
 
-  currentUser = user;
-
   return res.json({
     token: `mock-token-${user.id}`,
   });
 });
 
-app.get("/api/logout", (req, res) => {
-  currentUser = null;
-
+app.get("/api/logout", authMiddleware, (req, res) => {
   return res.json({
     message: "User logged out",
   });
 });
 
-app.get("/api/user", (req, res) => {
-  if (!currentUser) {
-    return res.status(401).json({
-      error: "Unauthorized",
+app.get("/api/user", authMiddleware, (req, res) => {
+  return res.json({
+    id: req.user.id,
+    full_name: req.user.full_name,
+    city: req.user.city,
+    country: req.user.country,
+    bio: req.user.bio,
+    email: req.user.email,
+    photo: req.user.photo,
+  });
+});
+
+app.post(
+  "/api/user",
+  authMiddleware,
+  upload.single("photo"),
+  (req, res) => {
+    const { full_name, city, country, bio } = req.body;
+
+    if (typeof full_name === "string") {
+      req.user.full_name = full_name;
+    }
+
+    if (typeof city === "string") {
+      req.user.city = city;
+    }
+
+    if (typeof country === "string") {
+      req.user.country = country;
+    }
+
+    if (typeof bio === "string") {
+      req.user.bio = bio;
+    }
+
+    if (req.file) {
+      req.user.photo = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+    }
+
+    return res.json({
+      id: req.user.id,
+      full_name: req.user.full_name,
+      city: req.user.city,
+      country: req.user.country,
+      bio: req.user.bio,
+      email: req.user.email,
+      photo: req.user.photo,
+    });
+  }
+);
+
+app.patch("/api/user/password", authMiddleware, (req, res) => {
+  const { password } = req.body;
+
+  if (!password || String(password).trim().length < 5) {
+    return res.status(400).json({
+      error: "Password must be at least 5 characters long",
     });
   }
 
+  req.user.password = String(password).trim();
+
   return res.json({
-    id: currentUser.id,
-    full_name: currentUser.full_name,
-    city: currentUser.city,
-    country: currentUser.country,
-    bio: currentUser.bio,
-    email: currentUser.email,
+    message: "OK",
   });
 });
 
@@ -200,5 +301,5 @@ app.post("/api/posts/:id/comments", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Mock API is running on http://localhost:${PORT}`);
+  console.log(`Mock API is running on http://127.0.0.1:${PORT}`);
 });

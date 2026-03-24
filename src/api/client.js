@@ -1,11 +1,28 @@
 import axios from "axios";
 
-const token = localStorage.getItem("token");
-
 export const apiClient = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: "http://127.0.0.1:8000/api",
   headers: {
     Accept: "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   },
 });
+
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    delete config.headers.Authorization;
+  }
+
+  return config;
+});
+
+export const setClientToken = (tokenValue) => {
+  if (tokenValue) {
+    localStorage.setItem("token", tokenValue);
+  } else {
+    localStorage.removeItem("token");
+  }
+};

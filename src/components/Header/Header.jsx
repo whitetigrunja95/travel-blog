@@ -11,6 +11,12 @@ export const Header = () => {
   const { isAuthenticated, logout, user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
+  const userName =
+  user?.full_name?.trim() ||
+  `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
+  `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() ||
+  "Пользователь";
+
   const handleLogout = async () => {
     setIsOpen(false);
     await logout();
@@ -20,11 +26,6 @@ export const Header = () => {
   const handleProfileClick = () => {
     setIsOpen((prev) => !prev);
   };
-
-  const userName =
-    user?.full_name ||
-    `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() ||
-    "Пользователь";
 
   return (
     <header className="header">
@@ -44,48 +45,45 @@ export const Header = () => {
                 Войти
               </Link>
             ) : (
-              <>
+              <div className="header__profile">
+                <button
+                  className="header__profile-trigger"
+                  type="button"
+                  onClick={handleProfileClick}
+                  aria-expanded={isOpen}
+                  aria-haspopup="menu"
+                >
+                  <img
+                    className="header__avatar"
+                    src={defaultAvatar}
+                    alt="Аватар пользователя"
+                  />
 
-                <div className="header__profile">
-                  <button
-                    className="header__profile-trigger"
-                    type="button"
-                    onClick={handleProfileClick}
-                    aria-expanded={isOpen}
-                    aria-haspopup="menu"
-                  >
-                    <img
-                      className="header__avatar"
-                      src={user?.avatar || defaultAvatar}
-                      alt="Аватар пользователя"
-                    />
+                  <span className="header__name">{userName}</span>
 
-                    <span className="header__name">{userName}</span>
+                  <span className="header__arrow">{isOpen ? "▴" : "▾"}</span>
+                </button>
 
-                    <span className="header__arrow">{isOpen ? "▴" : "▾"}</span>
-                  </button>
+                {isOpen && (
+                  <div className="header__dropdown" role="menu">
+                    <Link
+                      className="header__dropdown-link"
+                      to={AppRoute.PROFILE}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Профиль
+                    </Link>
 
-                  {isOpen && (
-                    <div className="header__dropdown" role="menu">
-                      <Link
-                        className="header__dropdown-link"
-                        to={AppRoute.PROFILE}
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Профиль
-                      </Link>
-
-                      <button
-                        className="header__dropdown-button"
-                        type="button"
-                        onClick={handleLogout}
-                      >
-                        Выйти
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </>
+                    <button
+                      className="header__dropdown-button"
+                      type="button"
+                      onClick={handleLogout}
+                    >
+                      Выйти
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

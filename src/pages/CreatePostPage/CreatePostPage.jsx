@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../../components/Header/Header";
+import { createPost } from "../../api/postsApi";
 import "./CreatePostPage.css";
 
 const TITLE_MAX_LENGTH = 255;
@@ -111,12 +112,22 @@ export const CreatePostPage = () => {
       return;
     }
 
-    console.log("Отправка формы:", {
-      ...formData,
-      photo: selectedFile,
-    });
+    try {
+      await createPost({
+        title: formData.title.trim(),
+        country: formData.country.trim(),
+        city: formData.city.trim(),
+        description: formData.description.trim(),
+        photo: selectedFile,
+      });
 
-    setIsSuccessModalOpen(true);
+      setIsSuccessModalOpen(true);
+    } catch (error) {
+      console.error(
+        "Не удалось создать пост:",
+        error.response?.data || error.message
+      );
+    }
   };
 
   const closeSuccessModal = () => {
@@ -146,9 +157,8 @@ export const CreatePostPage = () => {
             <form className="create-post-form" onSubmit={handleSubmit} noValidate>
               <div className="create-post-form__upload">
                 <label
-                  className={`create-post-form__upload-button ${
-                    errors.photo ? "create-post-form__upload-button--error" : ""
-                  }`}
+                  className={`create-post-form__upload-button ${errors.photo ? "create-post-form__upload-button--error" : ""
+                    }`}
                   htmlFor="photo"
                 >
                   <span className="create-post-form__upload-icon">⇩</span>
@@ -177,9 +187,8 @@ export const CreatePostPage = () => {
 
                 <input
                   id="title"
-                  className={`create-post-form__input ${
-                    errors.title ? "create-post-form__input--error" : ""
-                  }`}
+                  className={`create-post-form__input ${errors.title ? "create-post-form__input--error" : ""
+                    }`}
                   type="text"
                   name="title"
                   placeholder="Заголовок"
@@ -201,9 +210,8 @@ export const CreatePostPage = () => {
 
                   <input
                     id="country"
-                    className={`create-post-form__input ${
-                      errors.country ? "create-post-form__input--error" : ""
-                    }`}
+                    className={`create-post-form__input ${errors.country ? "create-post-form__input--error" : ""
+                      }`}
                     type="text"
                     name="country"
                     placeholder="Страна"
@@ -224,9 +232,8 @@ export const CreatePostPage = () => {
 
                   <input
                     id="city"
-                    className={`create-post-form__input ${
-                      errors.city ? "create-post-form__input--error" : ""
-                    }`}
+                    className={`create-post-form__input ${errors.city ? "create-post-form__input--error" : ""
+                      }`}
                     type="text"
                     name="city"
                     placeholder="Город"
@@ -248,9 +255,8 @@ export const CreatePostPage = () => {
 
                 <textarea
                   id="description"
-                  className={`create-post-form__textarea ${
-                    errors.description ? "create-post-form__textarea--error" : ""
-                  }`}
+                  className={`create-post-form__textarea ${errors.description ? "create-post-form__textarea--error" : ""
+                    }`}
                   name="description"
                   placeholder="Добавьте описание вашей истории"
                   maxLength={DESCRIPTION_MAX_LENGTH}

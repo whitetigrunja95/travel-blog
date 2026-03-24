@@ -10,14 +10,22 @@ export const getPostById = async (id) => {
   return response.data;
 };
 
+export const getPostComments = async (id) => {
+  const response = await apiClient.get(`/posts/${id}/comments`);
+  return response.data;
+};
+
 export const createPost = async (data) => {
   const formData = new FormData();
 
   formData.append("title", data.title);
+  formData.append("description", data.description);
   formData.append("country", data.country);
   formData.append("city", data.city);
-  formData.append("description", data.description);
-  formData.append("image", data.photo);
+
+  if (data.photo) {
+    formData.append("photo", data.photo);
+  }
 
   const response = await apiClient.post("/posts", formData, {
     headers: {

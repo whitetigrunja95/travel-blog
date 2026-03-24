@@ -8,27 +8,34 @@ export const getCurrentUser = async () => {
 export const updateUser = async (data) => {
   const formData = new FormData();
 
-  formData.append("full_name", data.fullName);
-  formData.append("city", data.city);
-  formData.append("description", data.about);
-
-  if (data.photoFile) {
-    formData.append("image", data.photoFile);
+  if (data.fullName?.trim()) {
+    formData.append("full_name", data.fullName.trim());
   }
 
-  const response = await apiClient.post("/user", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  if (data.city?.trim()) {
+    formData.append("city", data.city.trim());
+  }
+
+  if (data.country?.trim()) {
+    formData.append("country", data.country.trim());
+  }
+
+  if (data.bio?.trim()) {
+    formData.append("bio", data.bio.trim());
+  }
+
+  if (data.photo) {
+    formData.append("photo", data.photo);
+  }
+
+  const response = await apiClient.post("/user", formData);
 
   return response.data;
 };
 
 export const updatePassword = async (data) => {
   const response = await apiClient.patch("/user/password", {
-    password: data.newPassword,
-    password_repeat: data.repeatPassword,
+    password: data.password,
   });
 
   return response.data;

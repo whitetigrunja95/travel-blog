@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { loginUser, logoutUser, registerUser } from "../api/authApi";
 import { getCurrentUser } from "../api/userApi";
-import { apiClient } from "../api/client";
+import { setClientToken } from "../api/client";
 
 const AuthContext = createContext(null);
 
@@ -12,10 +12,10 @@ export const AuthProvider = ({ children }) => {
   const setAuthToken = (token) => {
     if (token) {
       localStorage.setItem("token", token);
-      apiClient.defaults.headers.Authorization = `Bearer ${token}`;
+      setClientToken(token);
     } else {
       localStorage.removeItem("token");
-      delete apiClient.defaults.headers.Authorization;
+      setClientToken(null);
     }
   };
 
@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const userData = await getCurrentUser();
       setUser(userData);
+      return userData;
     } catch (error) {
       setUser(null);
       setAuthToken(null);
@@ -54,14 +55,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (data) => {
-    try {
-      const response = await loginUser(data);
-      setAuthToken(response.token);
-      await loadUser();
-    } catch (error) {
-      console.error("Ошибка входа:", error.response?.data || error.message);
-      throw error;
-    }
+    const response = await loginUser(data);
+    setAuthToken(response.token);
+    await loadUser();
   };
 
   const register = async (data) => {
@@ -84,12 +80,13 @@ export const AuthProvider = ({ children }) => {
   const value = useMemo(
     () => ({
       user,
+      setUser,
+      loadUser,
       isAuthenticated: Boolean(user),
       isAuthChecked,
       login,
       register,
       logout,
-      loadUser,
     }),
     [user, isAuthChecked]
   );

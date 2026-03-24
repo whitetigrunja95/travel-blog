@@ -356,3 +356,35 @@
     align-self: flex-end;
   }
 }
+
+.profile-page__state {
+  padding: 48px 24px;
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1f1f1f;
+  text-align: center;
+  font-size: 18px;
+}
+
+.profile-page__state--error {
+  color: #ff4d4f;
+}
+
+.profile-page__edit-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.profile-page__edit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
