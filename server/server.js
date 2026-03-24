@@ -5,10 +5,10 @@ import multer from "multer";
 const app = express();
 const PORT = 8000;
 
-const upload = multer({ storage: multer.memoryStorage() });
-
 app.use(cors());
 app.use(express.json());
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const users = [];
 const posts = [
@@ -25,6 +25,7 @@ const posts = [
     comments: [
       {
         id: 1,
+        post_id: 1,
         author_name: "Мария",
         comment: "Очень атмосферно написано!",
         created_at: new Date().toISOString(),
@@ -33,6 +34,7 @@ const posts = [
     userInfo: {
       full_name: "Анна Смирнова",
       city: "Москва",
+      country: "Россия",
       bio: "Люблю самостоятельные путешествия и уютные города.",
     },
   },
@@ -50,6 +52,7 @@ const posts = [
     userInfo: {
       full_name: "Елена Орлова",
       city: "Киев",
+      country: "Украина",
       bio: "Путешествую ради впечатлений, музыки и новых вкусов.",
     },
   },
@@ -72,29 +75,24 @@ const getTokenFromRequest = (req) => {
 };
 
 const getUserIdFromToken = (token) => {
-  if (!token?.startsWith("mock-token-")) {
+  if (!token || !token.startsWith("mock-token-")) {
     return null;
   }
 
   const id = Number(token.replace("mock-token-", ""));
-
-  if (!Number.isInteger(id)) {
-    return null;
-  }
-
-  return id;
+  return Number.isInteger(id) ? id : null;
 };
 
 const authMiddleware = (req, res, next) => {
   const token = getTokenFromRequest(req);
+  const userId = getUserIdFromToken(token);
 
-  if (!token) {
+  if (!userId) {
     return res.status(401).json({
       error: "Unauthorized",
     });
   }
 
-  const userId = getUserIdFromToken(token);
   const user = users.find((item) => item.id === userId);
 
   if (!user) {
@@ -104,8 +102,6 @@ const authMiddleware = (req, res, next) => {
   }
 
   req.user = user;
-  req.token = token;
-
   next();
 };
 
@@ -147,6 +143,12 @@ app.post("/api/register", (req, res) => {
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({
+      error: "Email and password are required",
+    });
+  }
+
   const user = users.find(
     (item) => item.email === email && item.password === password
   );
@@ -175,49 +177,44 @@ app.get("/api/user", authMiddleware, (req, res) => {
     city: req.user.city,
     country: req.user.country,
     bio: req.user.bio,
-    email: req.user.email,
     photo: req.user.photo,
+    email: req.user.email,
   });
 });
 
-app.post(
-  "/api/user",
-  authMiddleware,
-  upload.single("photo"),
-  (req, res) => {
-    const { full_name, city, country, bio } = req.body;
+app.post("/api/user", authMiddleware, upload.single("photo"), (req, res) => {
+  const { full_name, city, country, bio } = req.body;
 
-    if (typeof full_name === "string") {
-      req.user.full_name = full_name;
-    }
-
-    if (typeof city === "string") {
-      req.user.city = city;
-    }
-
-    if (typeof country === "string") {
-      req.user.country = country;
-    }
-
-    if (typeof bio === "string") {
-      req.user.bio = bio;
-    }
-
-    if (req.file) {
-      req.user.photo = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
-    }
-
-    return res.json({
-      id: req.user.id,
-      full_name: req.user.full_name,
-      city: req.user.city,
-      country: req.user.country,
-      bio: req.user.bio,
-      email: req.user.email,
-      photo: req.user.photo,
-    });
+  if (typeof full_name === "string") {
+    req.user.full_name = full_name;
   }
-);
+
+  if (typeof city === "string") {
+    req.user.city = city;
+  }
+
+  if (typeof country === "string") {
+    req.user.country = country;
+  }
+
+  if (typeof bio === "string") {
+    req.user.bio = bio;
+  }
+
+  if (req.file) {
+    req.user.photo = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+  }
+
+  return res.json({
+    id: req.user.id,
+    full_name: req.user.full_name,
+    city: req.user.city,
+    country: req.user.country,
+    bio: req.user.bio,
+    photo: req.user.photo,
+    email: req.user.email,
+  });
+});
 
 app.patch("/api/user/password", authMiddleware, (req, res) => {
   const { password } = req.body;
@@ -246,6 +243,39 @@ app.get("/api/posts", (req, res) => {
   return res.json(postsList);
 });
 
+app.post("/api/posts", authMiddleware, upload.single("photo"), (req, res) => {
+  const { title, description, country, city } = req.body;
+
+  if (!title || !description || !country || !city) {
+    return res.status(400).json({
+      error: "title, description, country and city are required",
+    });
+  }
+
+  const newPost = {
+    id: posts.length + 1,
+    title: String(title).trim(),
+    excerpt: String(description).trim().slice(0, 120),
+    description: String(description).trim(),
+    country: String(country).trim(),
+    city: String(city).trim(),
+    photo: req.file
+      ? `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
+      : "",
+    comments: [],
+    userInfo: {
+      full_name: req.user.full_name || "",
+      city: req.user.city || "",
+      country: req.user.country || "",
+      bio: req.user.bio || "",
+    },
+  };
+
+  posts.unshift(newPost);
+
+  return res.status(200).json(newPost);
+});
+
 app.get("/api/posts/:id", (req, res) => {
   const post = posts.find((item) => item.id === Number(req.params.id));
 
@@ -270,7 +300,7 @@ app.get("/api/posts/:id/comments", (req, res) => {
   return res.json(post.comments);
 });
 
-app.post("/api/posts/:id/comments", (req, res) => {
+app.post("/api/posts/:id/comments", authMiddleware, (req, res) => {
   const post = posts.find((item) => item.id === Number(req.params.id));
 
   if (!post) {

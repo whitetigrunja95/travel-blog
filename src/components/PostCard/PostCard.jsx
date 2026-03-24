@@ -6,22 +6,28 @@ const getPostImage = (photo) => {
     return "";
   }
 
-  if (photo.startsWith("http")) {
+  if (photo.startsWith("http") || photo.startsWith("data:image")) {
     return photo;
   }
 
-  return `http://localhost:8000${photo}`;
+  return `http://127.0.0.1:8000${photo}`;
 };
 
 export const PostCard = ({ post }) => {
+  const imageSrc = getPostImage(post.photo);
+
   return (
     <article className="post-card">
       <Link className="post-card__image-link" to={`/posts/${post.id}`}>
-        <img
-          className="post-card__image"
-          src={getPostImage(post.photo)}
-          alt={post.title}
-        />
+        {imageSrc ? (
+          <img
+            className="post-card__image"
+            src={imageSrc}
+            alt={post.title}
+          />
+        ) : (
+          <div className="post-card__image post-card__image--placeholder" />
+        )}
       </Link>
 
       <div className="post-card__body">

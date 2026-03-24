@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { apiClient } from "./client.js";
 
 export const registerUser = async (data) => {
   const response = await apiClient.post("/register", {

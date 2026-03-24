@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { loginUser, logoutUser, registerUser } from "../api/authApi";
-import { getCurrentUser } from "../api/userApi";
-import { setClientToken } from "../api/client";
+import { loginUser, logoutUser, registerUser } from "../api/authApi.js";
+import { getCurrentUser } from "../api/userApi.js";
+import { setClientToken } from "../api/client.js";
 
 const AuthContext = createContext(null);
 
@@ -11,10 +11,8 @@ export const AuthProvider = ({ children }) => {
 
   const setAuthToken = (token) => {
     if (token) {
-      localStorage.setItem("token", token);
       setClientToken(token);
     } else {
-      localStorage.removeItem("token");
       setClientToken(null);
     }
   };
@@ -26,7 +24,6 @@ export const AuthProvider = ({ children }) => {
       return userData;
     } catch (error) {
       setUser(null);
-      setAuthToken(null);
       throw error;
     }
   };
@@ -40,12 +37,11 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      setAuthToken(token);
-
       try {
         await loadUser();
       } catch (error) {
         console.error("Не удалось загрузить пользователя:", error);
+        setAuthToken(null);
       } finally {
         setIsAuthChecked(true);
       }

@@ -3,6 +3,7 @@ import { Header } from "../../components/Header/Header";
 import { useAuth } from "../../context/AuthContext";
 import defaultAvatar from "../../assets/images/avatar-placeholder.png";
 import editIcon from "../../assets/icons/edit.svg";
+import photoIcon from "../../assets/icons/photo.svg";
 import {
   getCurrentUser,
   updatePassword,
@@ -20,6 +21,7 @@ export const ProfilePage = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [saveError, setSaveError] = useState("");
 
   const [photoFile, setPhotoFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(defaultAvatar);
@@ -48,6 +50,8 @@ export const ProfilePage = () => {
       about: user?.bio || "",
       newPassword: "",
     }));
+
+    setAvatarPreview(user?.photo || defaultAvatar);
   };
 
   const loadProfile = async () => {
@@ -84,6 +88,8 @@ export const ProfilePage = () => {
       ...prev,
       [name]: "",
     }));
+
+    setSaveError("");
   };
 
   const handleAvatarChange = (event) => {
@@ -95,6 +101,7 @@ export const ProfilePage = () => {
 
     setPhotoFile(file);
     setAvatarPreview(URL.createObjectURL(file));
+    setSaveError("");
   };
 
   const validateForm = () => {
@@ -126,6 +133,8 @@ export const ProfilePage = () => {
     }
 
     try {
+      setSaveError("");
+
       const updatedUser = await updateUser({
         fullName: formData.fullName,
         city: formData.city,
@@ -150,7 +159,7 @@ export const ProfilePage = () => {
         "Не удалось сохранить профиль:",
         error.response?.data || error.message
       );
-      setLoadError("Не удалось сохранить профиль");
+      setSaveError("Не удалось сохранить профиль");
     }
   };
 
@@ -228,7 +237,12 @@ export const ProfilePage = () => {
                   </div>
 
                   <label className="profile-page__change-photo">
-                    <span className="profile-page__change-photo-icon">📷</span>
+                    <img
+                      src={photoIcon}
+                      alt=""
+                      className="profile-page__change-photo-icon"
+                      aria-hidden="true"
+                    />
                     <span>Изменить фото</span>
                     <input
                       className="profile-page__file-input"
@@ -241,7 +255,9 @@ export const ProfilePage = () => {
 
                 <div className="profile-page__info-column">
                   <div className="profile-page__info-top">
-                    <h2 className="profile-page__name">{formData.fullName || "—"}</h2>
+                    <h2 className="profile-page__name">
+                      {formData.fullName || "—"}
+                    </h2>
 
                     <button
                       className="profile-page__edit-button"
@@ -309,9 +325,8 @@ export const ProfilePage = () => {
 
                       <input
                         id="fullName"
-                        className={`profile-page__input ${
-                          errors.fullName ? "profile-page__input--error" : ""
-                        }`}
+                        className={`profile-page__input ${errors.fullName ? "profile-page__input--error" : ""
+                          }`}
                         type="text"
                         name="fullName"
                         placeholder="ФИО"
@@ -366,7 +381,9 @@ export const ProfilePage = () => {
                     </div>
 
                     <div className="profile-page__password-section">
-                      <h3 className="profile-page__password-title">Смена пароля</h3>
+                      <h3 className="profile-page__password-title">
+                        Смена пароля
+                      </h3>
 
                       <div className="profile-page__password-row">
                         <div className="profile-page__field">
@@ -379,11 +396,10 @@ export const ProfilePage = () => {
 
                           <input
                             id="newPassword"
-                            className={`profile-page__input ${
-                              errors.newPassword
+                            className={`profile-page__input ${errors.newPassword
                                 ? "profile-page__input--error"
                                 : ""
-                            }`}
+                              }`}
                             type="password"
                             name="newPassword"
                             placeholder="Новый пароль"
@@ -400,6 +416,10 @@ export const ProfilePage = () => {
                       </div>
                     </div>
 
+                    {saveError && (
+                      <p className="profile-page__error">{saveError}</p>
+                    )}
+
                     <div className="profile-page__actions">
                       <button
                         className="profile-page__button profile-page__button--secondary"
@@ -410,6 +430,9 @@ export const ProfilePage = () => {
                             fullName: "",
                             newPassword: "",
                           });
+                          setSaveError("");
+                          setPhotoFile(null);
+                          loadProfile();
                         }}
                       >
                         Назад

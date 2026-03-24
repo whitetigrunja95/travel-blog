@@ -23,6 +23,18 @@ const formatDate = (value) => {
   return new Intl.DateTimeFormat("ru-RU").format(date);
 };
 
+const getPostImage = (photo) => {
+  if (!photo) {
+    return "";
+  }
+
+  if (photo.startsWith("http") || photo.startsWith("data:image")) {
+    return photo;
+  }
+
+  return `http://127.0.0.1:8000${photo}`;
+};
+
 export const PostPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -147,6 +159,8 @@ export const PostPage = () => {
     });
   };
 
+  const imageSrc = getPostImage(post?.photo);
+
   if (isLoading) {
     return (
       <div className="post-page">
@@ -204,11 +218,15 @@ export const PostPage = () => {
         <div className="post-page__container">
           {!isCommentFormOpen ? (
             <article className="post-page__card">
-              <img
-                className="post-page__image"
-                src={`http://localhost:8000${post.photo}`}
-                alt={post.title}
-              />
+              {imageSrc ? (
+                <img
+                  className="post-page__image"
+                  src={imageSrc}
+                  alt={post.title}
+                />
+              ) : (
+                <div className="post-page__image post-page__image--placeholder" />
+              )}
 
               <div className="post-page__body">
                 <h2 className="post-page__title">{post.title}</h2>

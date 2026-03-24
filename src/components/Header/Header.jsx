@@ -12,10 +12,10 @@ export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const userName =
-  user?.full_name?.trim() ||
-  `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
-  `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() ||
-  "Пользователь";
+    user?.full_name?.trim() ||
+    `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
+    `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() ||
+    "Пользователь";
 
   const handleLogout = async () => {
     setIsOpen(false);
@@ -55,7 +55,7 @@ export const Header = () => {
                 >
                   <img
                     className="header__avatar"
-                    src={defaultAvatar}
+                    src={user?.photo || defaultAvatar}
                     alt="Аватар пользователя"
                   />
 

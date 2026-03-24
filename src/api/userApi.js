@@ -29,7 +29,6 @@ export const updateUser = async (data) => {
   }
 
   const response = await apiClient.post("/user", formData);
-
   return response.data;
 };
 
