@@ -32,11 +32,13 @@ export const ProfilePage = () => {
     country: "",
     about: "",
     newPassword: "",
+    repeatPassword: "",
   });
 
   const [errors, setErrors] = useState({
     fullName: "",
     newPassword: "",
+    repeatPassword: "",
   });
 
   const aboutLength = useMemo(() => formData.about.length, [formData.about]);
@@ -49,6 +51,7 @@ export const ProfilePage = () => {
       country: user?.country || "",
       about: user?.bio || "",
       newPassword: "",
+      repeatPassword: "",
     }));
 
     setAvatarPreview(user?.photo || defaultAvatar);
@@ -108,14 +111,24 @@ export const ProfilePage = () => {
     const nextErrors = {
       fullName: "",
       newPassword: "",
+      repeatPassword: "",
     };
 
     if (!formData.fullName.trim()) {
       nextErrors.fullName = "Напишите ФИО";
     }
 
-    if (formData.newPassword && formData.newPassword.length < 5) {
-      nextErrors.newPassword = "Пароль должен содержать минимум 5 символов";
+    if (formData.newPassword) {
+      if (formData.newPassword.length < 5) {
+        nextErrors.newPassword =
+          "Пароль должен содержать минимум 5 символов";
+      }
+
+      if (!formData.repeatPassword.trim()) {
+        nextErrors.repeatPassword = "Повторите пароль";
+      } else if (formData.newPassword !== formData.repeatPassword) {
+        nextErrors.repeatPassword = "Пароли не совпадают";
+      }
     }
 
     setErrors(nextErrors);
@@ -330,8 +343,9 @@ export const ProfilePage = () => {
 
                       <input
                         id="fullName"
-                        className={`profile-page__input ${errors.fullName ? "profile-page__input--error" : ""
-                          }`}
+                        className={`profile-page__input ${
+                          errors.fullName ? "profile-page__input--error" : ""
+                        }`}
                         type="text"
                         name="fullName"
                         placeholder="ФИО"
@@ -347,7 +361,7 @@ export const ProfilePage = () => {
 
                     <div className="profile-page__field">
                       <label className="profile-page__label" htmlFor="city">
-                        Город
+                        <span className="profile-page__required">*</span> Город
                       </label>
 
                       <input
@@ -396,15 +410,17 @@ export const ProfilePage = () => {
                             className="profile-page__label"
                             htmlFor="newPassword"
                           >
+                            <span className="profile-page__required">*</span>{" "}
                             Новый пароль
                           </label>
 
                           <input
                             id="newPassword"
-                            className={`profile-page__input ${errors.newPassword
-                              ? "profile-page__input--error"
-                              : ""
-                              }`}
+                            className={`profile-page__input ${
+                              errors.newPassword
+                                ? "profile-page__input--error"
+                                : ""
+                            }`}
                             type="password"
                             name="newPassword"
                             placeholder="Новый пароль"
@@ -415,6 +431,36 @@ export const ProfilePage = () => {
                           {errors.newPassword && (
                             <p className="profile-page__error">
                               {errors.newPassword}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="profile-page__field">
+                          <label
+                            className="profile-page__label"
+                            htmlFor="repeatPassword"
+                          >
+                            <span className="profile-page__required">*</span>{" "}
+                            Повторите пароль
+                          </label>
+
+                          <input
+                            id="repeatPassword"
+                            className={`profile-page__input ${
+                              errors.repeatPassword
+                                ? "profile-page__input--error"
+                                : ""
+                            }`}
+                            type="password"
+                            name="repeatPassword"
+                            placeholder="Повторите пароль"
+                            value={formData.repeatPassword}
+                            onChange={handleChange}
+                          />
+
+                          {errors.repeatPassword && (
+                            <p className="profile-page__error">
+                              {errors.repeatPassword}
                             </p>
                           )}
                         </div>
@@ -434,6 +480,7 @@ export const ProfilePage = () => {
                           setErrors({
                             fullName: "",
                             newPassword: "",
+                            repeatPassword: "",
                           });
                           setSaveError("");
                           setPhotoFile(null);

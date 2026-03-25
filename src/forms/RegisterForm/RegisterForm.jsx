@@ -24,13 +24,19 @@ export const RegisterForm = () => {
 
   const passwordValue = watch("password");
 
+  const confirmPasswordErrorMessage = errors.confirmPassword?.message;
+  const isPasswordMismatch =
+    confirmPasswordErrorMessage === "Пароли не совпадают";
+
   const onSubmit = async (data) => {
     try {
       setServerError("");
+
       await registerUser({
         email: data.email,
         password: data.password,
       });
+
       navigate("/");
     } catch (error) {
       console.error("Ошибка регистрации:", error);
@@ -48,6 +54,7 @@ export const RegisterForm = () => {
         <label className="register-form__label" htmlFor="register-email">
           Email
         </label>
+
         <input
           className={`register-form__input ${
             errors.email || serverError ? "register-form__input--error" : ""
@@ -61,69 +68,88 @@ export const RegisterForm = () => {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
               message: "Введите корректный email",
             },
+            onChange: () => {
+              if (serverError) {
+                setServerError("");
+              }
+            },
           })}
         />
+
         {errors.email && (
           <span className="register-form__error">{errors.email.message}</span>
         )}
+
         {!errors.email && serverError && (
           <p className="register-form__server-error">{serverError}</p>
         )}
       </div>
 
-      <div className="register-form__row">
-        <div className="register-form__field">
-          <label className="register-form__label" htmlFor="register-password">
-            Пароль
-          </label>
-          <input
-            className={`register-form__input ${
-              errors.password ? "register-form__input--error" : ""
-            }`}
-            id="register-password"
-            type="password"
-            placeholder="Пароль"
-            {...register("password", {
-              required: "Введите пароль",
-              minLength: {
-                value: 5,
-                message: "Пароль должен содержать минимум 5 символов",
-              },
-            })}
-          />
-          {errors.password && (
-            <span className="register-form__error">
-              {errors.password.message}
-            </span>
-          )}
+      <div className="register-form__password-group">
+        <div className="register-form__row">
+          <div className="register-form__field">
+            <label className="register-form__label" htmlFor="register-password">
+              Пароль
+            </label>
+
+            <input
+              className={`register-form__input ${
+                errors.password || isPasswordMismatch
+                  ? "register-form__input--error"
+                  : ""
+              }`}
+              id="register-password"
+              type="password"
+              placeholder="Пароль"
+              {...register("password", {
+                required: "Введите пароль",
+                minLength: {
+                  value: 5,
+                  message: "Пароль должен содержать минимум 5 символов",
+                },
+              })}
+            />
+
+            {errors.password && (
+              <span className="register-form__error">
+                {errors.password.message}
+              </span>
+            )}
+          </div>
+
+          <div className="register-form__field">
+            <label
+              className="register-form__label"
+              htmlFor="register-confirm-password"
+            >
+              Повторите пароль
+            </label>
+
+            <input
+              className={`register-form__input ${
+                errors.confirmPassword ? "register-form__input--error" : ""
+              }`}
+              id="register-confirm-password"
+              type="password"
+              placeholder="Повторите пароль"
+              {...register("confirmPassword", {
+                required: "Подтвердите пароль",
+                validate: (value) =>
+                  value === passwordValue || "Пароли не совпадают",
+              })}
+            />
+
+            {errors.confirmPassword && !isPasswordMismatch && (
+              <span className="register-form__error">
+                {errors.confirmPassword.message}
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="register-form__field">
-          <label
-            className="register-form__label"
-            htmlFor="register-confirm-password"
-          >
-            Повторите пароль
-          </label>
-          <input
-            className={`register-form__input ${
-              errors.confirmPassword ? "register-form__input--error" : ""
-            }`}
-            id="register-confirm-password"
-            type="password"
-            placeholder="Повторите пароль"
-            {...register("confirmPassword", {
-              required: "Подтвердите пароль",
-              validate: (value) =>
-                value === passwordValue || "Пароли не совпадают",
-            })}
-          />
-          {errors.confirmPassword && (
-            <span className="register-form__error">
-              {errors.confirmPassword.message}
-            </span>
-          )}
-        </div>
+        {isPasswordMismatch && (
+          <p className="register-form__row-error">Пароли не совпадают</p>
+        )}
       </div>
 
       <div className="register-form__actions">

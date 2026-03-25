@@ -237,22 +237,6 @@ export const PostPage = () => {
                   ))}
                 </div>
 
-                <div className="post-page__author">
-                  <h3 className="post-page__author-name">
-                    {post.userInfo?.full_name || "Автор"}
-                  </h3>
-
-                  {post.userInfo?.city && (
-                    <p className="post-page__author-city">{post.userInfo.city}</p>
-                  )}
-
-                  {post.userInfo?.bio && (
-                    <p className="post-page__author-description">
-                      {post.userInfo.bio}
-                    </p>
-                  )}
-                </div>
-
                 <div className="post-page__comments">
                   {post.comments?.map((comment, index) => (
                     <div

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../../components/Header/Header";
 import { createPost } from "../../api/postsApi";
+import uploadIcon from "../../assets/icons/upload.svg";
 import "./CreatePostPage.css";
 
 const TITLE_MAX_LENGTH = 255;
@@ -65,8 +66,8 @@ export const CreatePostPage = () => {
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0] ?? null;
-    setSelectedFile(file);
 
+    setSelectedFile(file);
     setErrors((prev) => ({
       ...prev,
       photo: file ? validateImageFile(file) : "Загрузите фотографию",
@@ -95,7 +96,7 @@ export const CreatePostPage = () => {
     }
 
     if (!formData.description.trim()) {
-      nextErrors.description = "Добавьте описание";
+      nextErrors.description = "Добавьте текст отзыва";
     }
 
     setErrors(nextErrors);
@@ -157,11 +158,17 @@ export const CreatePostPage = () => {
             <form className="create-post-form" onSubmit={handleSubmit} noValidate>
               <div className="create-post-form__upload">
                 <label
-                  className={`create-post-form__upload-button ${errors.photo ? "create-post-form__upload-button--error" : ""
-                    }`}
+                  className={`create-post-form__upload-button ${
+                    errors.photo ? "create-post-form__upload-button--error" : ""
+                  }`}
                   htmlFor="photo"
                 >
-                  <span className="create-post-form__upload-icon">⇩</span>
+                  <img
+                    src={uploadIcon}
+                    alt=""
+                    className="create-post-form__upload-icon"
+                    aria-hidden="true"
+                  />
                   <span>
                     {selectedFile ? selectedFile.name : "Загрузите ваше фото"}
                   </span>
@@ -187,8 +194,9 @@ export const CreatePostPage = () => {
 
                 <input
                   id="title"
-                  className={`create-post-form__input ${errors.title ? "create-post-form__input--error" : ""
-                    }`}
+                  className={`create-post-form__input ${
+                    errors.title ? "create-post-form__input--error" : ""
+                  }`}
                   type="text"
                   name="title"
                   placeholder="Заголовок"
@@ -210,8 +218,9 @@ export const CreatePostPage = () => {
 
                   <input
                     id="country"
-                    className={`create-post-form__input ${errors.country ? "create-post-form__input--error" : ""
-                      }`}
+                    className={`create-post-form__input ${
+                      errors.country ? "create-post-form__input--error" : ""
+                    }`}
                     type="text"
                     name="country"
                     placeholder="Страна"
@@ -232,8 +241,9 @@ export const CreatePostPage = () => {
 
                   <input
                     id="city"
-                    className={`create-post-form__input ${errors.city ? "create-post-form__input--error" : ""
-                      }`}
+                    className={`create-post-form__input ${
+                      errors.city ? "create-post-form__input--error" : ""
+                    }`}
                     type="text"
                     name="city"
                     placeholder="Город"
@@ -255,10 +265,11 @@ export const CreatePostPage = () => {
 
                 <textarea
                   id="description"
-                  className={`create-post-form__textarea ${errors.description ? "create-post-form__textarea--error" : ""
-                    }`}
+                  className={`create-post-form__textarea ${
+                    errors.description ? "create-post-form__textarea--error" : ""
+                  }`}
                   name="description"
-                  placeholder="Добавьте описание вашей истории"
+                  placeholder="Добавьте текст отзыва"
                   maxLength={DESCRIPTION_MAX_LENGTH}
                   value={formData.description}
                   onChange={handleChange}

@@ -27,13 +27,8 @@ export const LoginForm = () => {
       await login(data);
       navigate("/");
     } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        "Неправильный логин или пароль";
-
       console.error("Ошибка входа:", error.response?.data || error.message);
-      setServerError(message);
+      setServerError("Неправильный логин или пароль");
     }
   };
 
@@ -45,9 +40,11 @@ export const LoginForm = () => {
         <label className="login-form__label" htmlFor="email">
           Логин
         </label>
+
         <input
-          className={`login-form__input ${errors.email ? "login-form__input--error" : ""
-            }`}
+          className={`login-form__input ${
+            errors.email || serverError ? "login-form__input--error" : ""
+          }`}
           id="email"
           type="email"
           placeholder="Email"
@@ -57,8 +54,14 @@ export const LoginForm = () => {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
               message: "Введите корректный email",
             },
+            onChange: () => {
+              if (serverError) {
+                setServerError("");
+              }
+            },
           })}
         />
+
         {errors.email && (
           <span className="login-form__error">{errors.email.message}</span>
         )}
@@ -68,9 +71,11 @@ export const LoginForm = () => {
         <label className="login-form__label" htmlFor="password">
           Пароль
         </label>
+
         <input
-          className={`login-form__input ${errors.password ? "login-form__input--error" : ""
-            }`}
+          className={`login-form__input ${
+            errors.password || serverError ? "login-form__input--error" : ""
+          }`}
           id="password"
           type="password"
           placeholder="Пароль"
@@ -80,8 +85,14 @@ export const LoginForm = () => {
               value: 5,
               message: "Пароль должен содержать минимум 5 символов",
             },
+            onChange: () => {
+              if (serverError) {
+                setServerError("");
+              }
+            },
           })}
         />
+
         {errors.password && (
           <span className="login-form__error">{errors.password.message}</span>
         )}
@@ -96,7 +107,11 @@ export const LoginForm = () => {
           Зарегистрироваться
         </button>
 
-        <button className="login-form__submit" type="submit" disabled={isSubmitting}>
+        <button
+          className="login-form__submit"
+          type="submit"
+          disabled={isSubmitting}
+        >
           Войти
         </button>
       </div>

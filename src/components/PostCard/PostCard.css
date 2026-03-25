@@ -1,4 +1,7 @@
 .post-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   overflow: hidden;
   border: 1px solid #e8e8e8;
   border-radius: 10px;
@@ -19,7 +22,15 @@
 }
 
 .post-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   padding: 26px 25px 25px;
+}
+
+.post-card__content {
+  display: flex;
+  flex-direction: column;
 }
 
 .post-card__title {
@@ -36,16 +47,20 @@
 }
 
 .post-card__excerpt {
-  margin: 0 0 18px;
+  margin: 0;
   color: #868383;
   font-size: 15px;
   line-height: 1.8;
-  margin-bottom: 38px;;
 
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.post-card__footer {
+  margin-top: auto;
+  padding-top: 25px;
 }
 
 .post-card__location {
@@ -57,7 +72,7 @@
 }
 
 .post-card__more {
-  color: #FFA902;
+  color: #ffa902;
   font-size: 14px;
   line-height: 1.8;
   text-decoration: underline;
