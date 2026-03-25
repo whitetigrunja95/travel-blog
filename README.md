@@ -1,16 +1,133 @@
-# React + Vite
+# Travel Blog
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Учебный проект блога о путешествиях на React.  
+Приложение позволяет просматривать истории о путешествиях, регистрироваться и авторизоваться, редактировать профиль, создавать посты с изображениями и оставлять комментарии.
 
-Currently, two official plugins are available:
+## Функциональность
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### Пользователь
+- регистрация
+- авторизация
+- выход из профиля
+- просмотр данных текущего пользователя
+- редактирование профиля
+- смена пароля
+- загрузка аватара
 
-## React Compiler
+### Посты
+- просмотр списка постов
+- просмотр поста по id
+- создание нового поста
+- загрузка изображения поста
+- просмотр комментариев к посту
+- добавление комментария
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Интерфейс
+- главная страница со списком историй
+- страница входа
+- страница регистрации
+- страница профиля
+- страница создания поста
+- страница отдельного поста
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Технологии
+
+### Frontend
+- React
+- React Router DOM
+- Axios
+- Vite
+
+### Backend (mock API)
+- Node.js
+- Express
+- Cors
+- Multer
+
+---
+
+## Структура проекта
+
+Проект состоит из двух частей:
+
+1. **Frontend-приложение** на React
+2. **Mock API сервер** на Express
+
+---
+
+## Установка frontend
+
+Перейдите в папку проекта:
+
+```bash
+cd travel-blog
+
+Установите зависимости:
+
+npm install
+Основные зависимости frontend
+
+Если нужно установить вручную:
+
+npm install react react-dom react-router-dom axios
+Инструменты разработки
+
+Если проект ещё не был инициализирован через Vite, обычно используются:
+
+npm install -D vite
+Запуск frontend
+npm run dev
+
+После запуска приложение обычно будет доступно по адресу:
+
+http://127.0.0.1:5173
+Установка backend
+
+Перейдите в папку, где находится server.js.
+
+Если сервер находится в корне проекта, можно оставаться там же.
+
+Установите зависимости:
+
+npm install express cors multer
+Запуск backend
+node server.js
+
+После запуска сервер будет доступен по адресу:
+
+http://127.0.0.1:8000
+Хранение данных
+
+В проекте реализовано сохранение данных в JSON-файл, чтобы данные не пропадали после перезапуска сервера.
+
+Что сохраняется:
+зарегистрированные пользователи
+профиль пользователя
+аватар пользователя
+посты
+изображения постов
+комментарии
+пароль пользователя
+Что нужно для хранения данных:
+
+Создать папку:
+
+data
+
+Внутри неё сервер автоматически создаёт файл:
+
+data/db.json
+
+Если папки data нет, сервер создаст её сам при запуске.
+
+Порядок запуска проекта
+1. Установить зависимости frontend
+npm install
+2. Установить зависимости backend
+npm install express cors multer
+3. Запустить backend
+node server.js
+4. Запустить frontend
+npm run dev
