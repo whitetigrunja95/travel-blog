@@ -1,17 +1,31 @@
 import express from "express";
 import cors from "cors";
 import multer from "multer";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 const PORT = 8000;
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const DATA_DIR = path.join(__dirname, "data");
+const DB_FILE = path.join(DATA_DIR, "db.json");
+
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+  },
+});
 
-const users = [];
-const posts = [
+const defaultPosts = [
   {
     id: 1,
     title: "Утро в Стамбуле",
@@ -57,6 +71,76 @@ const posts = [
     },
   },
 ];
+
+const ensureDataFile = () => {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+
+  if (!fs.existsSync(DB_FILE)) {
+    const initialData = {
+      users: [],
+      posts: defaultPosts,
+    };
+
+    fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), "utf-8");
+  }
+};
+
+const readDb = () => {
+  ensureDataFile();
+
+  try {
+    const raw = fs.readFileSync(DB_FILE, "utf-8");
+    const parsed = JSON.parse(raw);
+
+    return {
+      users: Array.isArray(parsed.users) ? parsed.users : [],
+      posts: Array.isArray(parsed.posts) ? parsed.posts : defaultPosts,
+    };
+  } catch (error) {
+    console.error("Не удалось прочитать db.json:", error);
+    return {
+      users: [],
+      posts: defaultPosts,
+    };
+  }
+};
+
+const writeDb = (data) => {
+  ensureDataFile();
+  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+};
+
+let { users, posts } = readDb();
+
+const saveDb = () => {
+  writeDb({ users, posts });
+};
+
+const getNextUserId = () => {
+  if (users.length === 0) {
+    return 1;
+  }
+
+  return Math.max(...users.map((user) => user.id)) + 1;
+};
+
+const getNextPostId = () => {
+  if (posts.length === 0) {
+    return 1;
+  }
+
+  return Math.max(...posts.map((post) => post.id)) + 1;
+};
+
+const getNextCommentId = (post) => {
+  if (!Array.isArray(post.comments) || post.comments.length === 0) {
+    return 1;
+  }
+
+  return Math.max(...post.comments.map((comment) => comment.id || 0)) + 1;
+};
 
 const getTokenFromRequest = (req) => {
   const authHeader = req.headers.authorization;
@@ -114,7 +198,10 @@ app.post("/api/register", (req, res) => {
     });
   }
 
-  const existingUser = users.find((user) => user.email === email);
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const normalizedPassword = String(password).trim();
+
+  const existingUser = users.find((user) => user.email === normalizedEmail);
 
   if (existingUser) {
     return res.status(400).json({
@@ -123,9 +210,9 @@ app.post("/api/register", (req, res) => {
   }
 
   const newUser = {
-    id: users.length + 1,
-    email,
-    password,
+    id: getNextUserId(),
+    email: normalizedEmail,
+    password: normalizedPassword,
     full_name: "",
     city: "",
     country: "",
@@ -134,6 +221,7 @@ app.post("/api/register", (req, res) => {
   };
 
   users.push(newUser);
+  saveDb();
 
   return res.json({
     token: `mock-token-${newUser.id}`,
@@ -149,8 +237,12 @@ app.post("/api/login", (req, res) => {
     });
   }
 
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const normalizedPassword = String(password).trim();
+
   const user = users.find(
-    (item) => item.email === email && item.password === password
+    (item) =>
+      item.email === normalizedEmail && item.password === normalizedPassword
   );
 
   if (!user) {
@@ -186,24 +278,26 @@ app.post("/api/user", authMiddleware, upload.single("photo"), (req, res) => {
   const { full_name, city, country, bio } = req.body;
 
   if (typeof full_name === "string") {
-    req.user.full_name = full_name;
+    req.user.full_name = full_name.trim();
   }
 
   if (typeof city === "string") {
-    req.user.city = city;
+    req.user.city = city.trim();
   }
 
   if (typeof country === "string") {
-    req.user.country = country;
+    req.user.country = country.trim();
   }
 
   if (typeof bio === "string") {
-    req.user.bio = bio;
+    req.user.bio = bio.trim();
   }
 
   if (req.file) {
     req.user.photo = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
   }
+
+  saveDb();
 
   return res.json({
     id: req.user.id,
@@ -226,6 +320,7 @@ app.patch("/api/user/password", authMiddleware, (req, res) => {
   }
 
   req.user.password = String(password).trim();
+  saveDb();
 
   return res.json({
     message: "OK",
@@ -252,13 +347,18 @@ app.post("/api/posts", authMiddleware, upload.single("photo"), (req, res) => {
     });
   }
 
+  const normalizedTitle = String(title).trim();
+  const normalizedDescription = String(description).trim();
+  const normalizedCountry = String(country).trim();
+  const normalizedCity = String(city).trim();
+
   const newPost = {
-    id: posts.length + 1,
-    title: String(title).trim(),
-    excerpt: String(description).trim().slice(0, 120),
-    description: String(description).trim(),
-    country: String(country).trim(),
-    city: String(city).trim(),
+    id: getNextPostId(),
+    title: normalizedTitle,
+    excerpt: normalizedDescription.slice(0, 120),
+    description: normalizedDescription,
+    country: normalizedCountry,
+    city: normalizedCity,
     photo: req.file
       ? `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
       : "",
@@ -272,6 +372,7 @@ app.post("/api/posts", authMiddleware, upload.single("photo"), (req, res) => {
   };
 
   posts.unshift(newPost);
+  saveDb();
 
   return res.status(200).json(newPost);
 });
@@ -297,7 +398,7 @@ app.get("/api/posts/:id/comments", (req, res) => {
     });
   }
 
-  return res.json(post.comments);
+  return res.json(post.comments || []);
 });
 
 app.post("/api/posts/:id/comments", authMiddleware, (req, res) => {
@@ -318,14 +419,19 @@ app.post("/api/posts/:id/comments", authMiddleware, (req, res) => {
   }
 
   const newComment = {
-    id: post.comments.length + 1,
+    id: getNextCommentId(post),
     post_id: post.id,
-    author_name: full_name,
-    comment,
+    author_name: String(full_name).trim(),
+    comment: String(comment).trim(),
     created_at: new Date().toISOString(),
   };
 
+  if (!Array.isArray(post.comments)) {
+    post.comments = [];
+  }
+
   post.comments.push(newComment);
+  saveDb();
 
   return res.json(newComment);
 });

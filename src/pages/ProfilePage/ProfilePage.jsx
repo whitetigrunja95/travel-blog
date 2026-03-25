@@ -306,7 +306,12 @@ export const ProfilePage = () => {
                     </div>
 
                     <label className="profile-page__change-photo">
-                      <span className="profile-page__change-photo-icon">📷</span>
+                      <img
+                        src={photoIcon}
+                        alt=""
+                        className="profile-page__change-photo-icon"
+                        aria-hidden="true"
+                      />
                       <span>Изменить фото</span>
                       <input
                         className="profile-page__file-input"
@@ -397,8 +402,8 @@ export const ProfilePage = () => {
                           <input
                             id="newPassword"
                             className={`profile-page__input ${errors.newPassword
-                                ? "profile-page__input--error"
-                                : ""
+                              ? "profile-page__input--error"
+                              : ""
                               }`}
                             type="password"
                             name="newPassword"
