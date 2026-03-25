@@ -36,14 +36,15 @@
   margin: 0;
   color: #ffffff;
   text-align: center;
-  font-size: 58px;
-  line-height: 1.05;
+  font-size: 48px;
+  line-height: 1;
   font-weight: 700;
   text-transform: uppercase;
+  margin-bottom: 40px;
 }
 
 .profile-page__content {
-  padding: 20px 16px 80px;
+  padding: 16px 16px 80px;
 }
 
 .profile-page__container {
@@ -70,9 +71,8 @@
 
 .profile-page__view-layout,
 .profile-page__form-layout {
-  display: grid;
-  grid-template-columns: 180px minmax(0, 1fr);
-  gap: 34px;
+  display: flex;
+  gap: 30px;
 }
 
 .profile-page__avatar-column {
@@ -82,10 +82,10 @@
 }
 
 .profile-page__avatar-box {
-  width: 180px;
-  height: 180px;
+  width: 240px;
+  height: 240px;
   overflow: hidden;
-  border-radius: 6px;
+  border-radius: 10px;
   background: #f2f2f2;
 }
 
@@ -120,8 +120,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 18px;
+  gap: 37px;
+  margin-bottom: 4px;
 }
 
 .profile-page__name {

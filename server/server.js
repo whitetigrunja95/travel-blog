@@ -328,12 +328,16 @@ app.patch("/api/user/password", authMiddleware, (req, res) => {
 });
 
 app.get("/api/posts", (req, res) => {
-  const postsList = posts.map(({ id, title, excerpt, photo }) => ({
-    id,
-    title,
-    excerpt,
-    photo,
-  }));
+  const postsList = posts.map(
+    ({ id, title, excerpt, photo, country, city }) => ({
+      id,
+      title,
+      excerpt,
+      photo,
+      country,
+      city,
+    })
+  );
 
   return res.json(postsList);
 });
