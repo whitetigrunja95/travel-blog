@@ -11,6 +11,7 @@ Frontend (Vercel):
 https://travel-blog-git-main-whitetigrunja95s-projects.vercel.app/
 
 Backend API (Render):
+
 https://travel-blog-eaku.onrender.com
 
 Проверка API:
