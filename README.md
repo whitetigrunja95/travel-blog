@@ -12,7 +12,7 @@ https://travel-blog-git-main-whitetigrunja95s-projects.vercel.app/
 
 Backend API (Render):
 
-https://travel-blog-eaku.onrender.com
+https://travel-blog-js1.onrender.com
 
 Проверка API:
 
