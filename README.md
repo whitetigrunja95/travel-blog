@@ -8,11 +8,11 @@
 
 Frontend (Vercel):
 
-https://travel-blog-git-main-whitetigrunja95s-projects.vercel.app/
+https://travel-blog-delta-beige.vercel.app/
 
 Backend API (Render):
 
-https://travel-blog-js1.onrender.com
+https://travel-blog-js1.onrender.com/
 
 Проверка API:
 
